@@ -51,6 +51,8 @@ class Sikamaru(object):
         self._size = (1.001*self._size[0],1.001*self._size[1])
         self.im1 = pygame.transform.smoothscale(self.im1,self.size_int)
         self.im2 = pygame.transform.smoothscale(self.im2,self.size_int)
+        self.rect = self.im1.get_rect()
+        self.rect.center = self.posi
     def move(self,next_posi):
         if next_posi[0] - self.posi[0]<0 and self.head == 'right':
             self.im1 = pygame.transform.flip(self.im1,True,False)
