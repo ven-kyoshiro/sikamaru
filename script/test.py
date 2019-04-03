@@ -29,14 +29,17 @@ class Sikamaru(object):
                "../image/sikamaru1.png").convert_alpha()
         im2 = pygame.image.load(
                 "../image/sikamaru2.png").convert_alpha()
-        self.size  = (100,70)
-        self.im1 = pygame.transform.smoothscale(im1,self.size)
-        self.im2 = pygame.transform.smoothscale(im2,self.size)
+        self._size  = (10.*5,7.*5)
+        self.im1 = pygame.transform.smoothscale(im1,self.size_int)
+        self.im2 = pygame.transform.smoothscale(im2,self.size_int)
         self.head = 'left'
         self.posi = posi
         self.show_im = 1
         self.rect = self.im1.get_rect()
         self.rect.center = self.posi
+    @property
+    def size_int(self):
+        return (int(self._size[0]),int(self._size[1]))
     def get_im(self):
         if self.show_im == 1:
             self.show_im = 2
@@ -44,7 +47,10 @@ class Sikamaru(object):
         else:
             self.show_im = 1
             return self.im2
-
+    def bigup(self):
+        self._size = (1.001*self._size[0],1.001*self._size[1])
+        self.im1 = pygame.transform.smoothscale(self.im1,self.size_int)
+        self.im2 = pygame.transform.smoothscale(self.im2,self.size_int)
     def move(self,next_posi):
         if next_posi[0] - self.posi[0]<0 and self.head == 'right':
             self.im1 = pygame.transform.flip(self.im1,True,False)
@@ -158,9 +164,9 @@ def main():
         ## env
         obs = make_obs((tx,ty),sika.posi,w,h)
         ac_real, ac, a_i = pol.deterministic_ac_real(torch.tensor(obs, dtype=torch.float))
-        ac_real = ac_real.reshape(pol.ac_space.shape)
-        # a = rule_act((tx,ty),sika.posi)
-        a = ac_dict[int(ac_real)]
+        # ac_real = ac_real.reshape(pol.ac_space.shape)
+        a = rule_act((tx,ty),sika.posi)
+        # a = ac_dict[int(ac_real)]
 
         nx = sika.posi[0] + a[0]
         nx = max(min(nx,w),0)
@@ -176,6 +182,8 @@ def main():
             screen.blit(esa.im, esa.rect)
             # scr
             rew = esa.life_step(sika)
+            if rew>0:
+                sika.bigup()
             if esa.life == 0:
                 pass
                 #TODO add one epi and learn
